@@ -1,0 +1,704 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Key Levels Indicator
+
+//@version=6
+indicator("Key Levels", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ============================================================================
+// 输入参数
+// ============================================================================
+
+// 级别1设置
+grp1 = "━━━ Level 1 ━━━"
+tf1_enabled = input.bool(true, "启用", group=grp1, inline="tf1")
+tf1_select = input.string("D", "时间框架", options=["None", "4H", "D", "3D", "W", "M", "Y"], group=grp1, inline="tf1")
+tf1_color = input.color(color.orange, "颜色", group=grp1, inline="tf1")
+tf1_label = input.string("d", "标签", group=grp1, inline="tf1")
+tf1_show_curr_open = input.bool(true, "O", group=grp1, inline="tf1_curr")
+tf1_show_curr_high = input.bool(true, "H", group=grp1, inline="tf1_curr")
+tf1_show_curr_low = input.bool(true, "L", group=grp1, inline="tf1_curr")
+tf1_show_curr_mid = input.bool(false, "½", group=grp1, inline="tf1_curr")
+tf1_show_prev_open = input.bool(false, "pO", group=grp1, inline="tf1_prev")
+tf1_show_prev_high = input.bool(true, "pH", group=grp1, inline="tf1_prev")
+tf1_show_prev_low = input.bool(true, "pL", group=grp1, inline="tf1_prev")
+tf1_show_prev_mid = input.bool(false, "p½", group=grp1, inline="tf1_prev")
+
+// 级别2设置
+grp2 = "━━━ Level 2 ━━━"
+tf2_enabled = input.bool(true, "启用", group=grp2, inline="tf2")
+tf2_select = input.string("W", "时间框架", options=["None", "4H", "D", "3D", "W", "M", "Y"], group=grp2, inline="tf2")
+tf2_color = input.color(color.blue, "颜色", group=grp2, inline="tf2")
+tf2_label = input.string("w", "标签", group=grp2, inline="tf2")
+tf2_show_curr_open = input.bool(true, "O", group=grp2, inline="tf2_curr")
+tf2_show_curr_high = input.bool(true, "H", group=grp2, inline="tf2_curr")
+tf2_show_curr_low = input.bool(true, "L", group=grp2, inline="tf2_curr")
+tf2_show_curr_mid = input.bool(false, "½", group=grp2, inline="tf2_curr")
+tf2_show_prev_open = input.bool(false, "pO", group=grp2, inline="tf2_prev")
+tf2_show_prev_high = input.bool(true, "pH", group=grp2, inline="tf2_prev")
+tf2_show_prev_low = input.bool(true, "pL", group=grp2, inline="tf2_prev")
+tf2_show_prev_mid = input.bool(false, "p½", group=grp2, inline="tf2_prev")
+
+// 级别3设置
+grp3 = "━━━ Level 3 ━━━"
+tf3_enabled = input.bool(false, "启用", group=grp3, inline="tf3")
+tf3_select = input.string("M", "时间框架", options=["None", "4H", "D", "3D", "W", "M", "Y"], group=grp3, inline="tf3")
+tf3_color = input.color(color.purple, "颜色", group=grp3, inline="tf3")
+tf3_label = input.string("m", "标签", group=grp3, inline="tf3")
+tf3_show_curr_open = input.bool(true, "O", group=grp3, inline="tf3_curr")
+tf3_show_curr_high = input.bool(true, "H", group=grp3, inline="tf3_curr")
+tf3_show_curr_low = input.bool(true, "L", group=grp3, inline="tf3_curr")
+tf3_show_curr_mid = input.bool(false, "½", group=grp3, inline="tf3_curr")
+tf3_show_prev_open = input.bool(false, "pO", group=grp3, inline="tf3_prev")
+tf3_show_prev_high = input.bool(true, "pH", group=grp3, inline="tf3_prev")
+tf3_show_prev_low = input.bool(true, "pL", group=grp3, inline="tf3_prev")
+tf3_show_prev_mid = input.bool(false, "p½", group=grp3, inline="tf3_prev")
+
+// 级别4设置
+grp4 = "━━━ Level 4 ━━━"
+tf4_enabled = input.bool(false, "启用", group=grp4, inline="tf4")
+tf4_select = input.string("Y", "时间框架", options=["None", "4H", "D", "3D", "W", "M", "Y"], group=grp4, inline="tf4")
+tf4_color = input.color(color.teal, "颜色", group=grp4, inline="tf4")
+tf4_label = input.string("y", "标签", group=grp4, inline="tf4")
+tf4_show_curr_open = input.bool(true, "O", group=grp4, inline="tf4_curr")
+tf4_show_curr_high = input.bool(true, "H", group=grp4, inline="tf4_curr")
+tf4_show_curr_low = input.bool(true, "L", group=grp4, inline="tf4_curr")
+tf4_show_curr_mid = input.bool(false, "½", group=grp4, inline="tf4_curr")
+tf4_show_prev_open = input.bool(false, "pO", group=grp4, inline="tf4_prev")
+tf4_show_prev_high = input.bool(true, "pH", group=grp4, inline="tf4_prev")
+tf4_show_prev_low = input.bool(true, "pL", group=grp4, inline="tf4_prev")
+tf4_show_prev_mid = input.bool(false, "p½", group=grp4, inline="tf4_prev")
+
+// 样式设置
+grp_style = "━━━ 样式设置 ━━━"
+line_width = input.int(1, "线条宽度", minval=1, maxval=4, group=grp_style)
+line_style_input = input.string("Solid", "线条样式", options=["Solid", "Dashed", "Dotted"], group=grp_style)
+line_right_offset = input.int(10, "线条右端偏移", minval=1, maxval=50, group=grp_style, tooltip="线条右端距离当前K线的bar数")
+show_labels = input.bool(true, "显示标签", group=grp_style)
+label_size_input = input.string("Large", "标签大小", options=["Tiny", "Small", "Normal", "Large", "Huge"], group=grp_style)
+
+// ============================================================================
+// Day of Week Levels (特定星期几的价格水平)
+// ============================================================================
+
+grp_dow = "━━━ Day of Week Levels ━━━"
+
+// 星期一
+dow1_color = input.color(color.new(#89CCA7, 0), "", group=grp_dow, inline="dow1")
+dow1_day = input.string("Monday", "", options=["None", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], group=grp_dow, inline="dow1")
+dow1_show_open = input.bool(false, "O", group=grp_dow, inline="dow1")
+dow1_show_high = input.bool(false, "H", group=grp_dow, inline="dow1")
+dow1_show_low = input.bool(false, "L", group=grp_dow, inline="dow1")
+dow1_show_mid = input.bool(false, "½", group=grp_dow, inline="dow1")
+
+// 星期二
+dow2_color = input.color(color.new(#E8B4A8, 0), "", group=grp_dow, inline="dow2")
+dow2_day = input.string("Tuesday", "", options=["None", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], group=grp_dow, inline="dow2")
+dow2_show_open = input.bool(false, "O", group=grp_dow, inline="dow2")
+dow2_show_high = input.bool(false, "H", group=grp_dow, inline="dow2")
+dow2_show_low = input.bool(false, "L", group=grp_dow, inline="dow2")
+dow2_show_mid = input.bool(false, "½", group=grp_dow, inline="dow2")
+
+// 星期五
+dow3_color = input.color(color.new(#E85D04, 0), "", group=grp_dow, inline="dow3")
+dow3_day = input.string("Friday", "", options=["None", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], group=grp_dow, inline="dow3")
+dow3_show_open = input.bool(false, "O", group=grp_dow, inline="dow3")
+dow3_show_high = input.bool(true, "H", group=grp_dow, inline="dow3")
+dow3_show_low = input.bool(true, "L", group=grp_dow, inline="dow3")
+dow3_show_mid = input.bool(false, "½", group=grp_dow, inline="dow3")
+
+// ============================================================================
+// 辅助函数
+// ============================================================================
+
+// 转换时间框架字符串
+tfToString(tf) =>
+    switch tf
+        "4H" => "240"
+        "D" => "D"
+        "3D" => "3D"
+        "W" => "W"
+        "M" => "M"
+        "Y" => "12M"
+        => ""
+
+// 转换线条样式
+getLineStyle() =>
+    switch line_style_input
+        "Solid" => line.style_solid
+        "Dashed" => line.style_dashed
+        "Dotted" => line.style_dotted
+        => line.style_solid
+
+// 转换标签大小
+getLabelSize() =>
+    switch label_size_input
+        "Tiny" => size.tiny
+        "Small" => size.small
+        "Normal" => size.normal
+        "Large" => size.large
+        "Huge" => size.huge
+        => size.large
+
+// 星期几转换为数字 (1=Sunday, 2=Monday, ..., 7=Saturday)
+getDayOfWeekNum(dayStr) =>
+    switch dayStr
+        "Sunday" => 1
+        "Monday" => 2
+        "Tuesday" => 3
+        "Wednesday" => 4
+        "Thursday" => 5
+        "Friday" => 6
+        "Saturday" => 7
+        => 0
+
+// 获取星期几的缩写标签
+getDayLabel(dayStr) =>
+    switch dayStr
+        "Sunday" => "sun"
+        "Monday" => "mon"
+        "Tuesday" => "tue"
+        "Wednesday" => "wed"
+        "Thursday" => "thu"
+        "Friday" => "fri"
+        "Saturday" => "sat"
+        => ""
+
+// ============================================================================
+// 周期追踪 - 使用时间戳以支持长周期
+// ============================================================================
+
+tf1_str = tfToString(tf1_select)
+tf2_str = tfToString(tf2_select)
+tf3_str = tfToString(tf3_select)
+tf4_str = tfToString(tf4_select)
+
+tf1_time = tf1_str != "" ? time(tf1_str) : na
+tf2_time = tf2_str != "" ? time(tf2_str) : na
+tf3_time = tf3_str != "" ? time(tf3_str) : na
+tf4_time = tf4_str != "" ? time(tf4_str) : na
+
+tf1_isNew = ta.change(tf1_time) != 0
+tf2_isNew = ta.change(tf2_time) != 0
+tf3_isNew = ta.change(tf3_time) != 0
+tf4_isNew = ta.change(tf4_time) != 0
+
+// 使用时间戳追踪周期开始点（突破 bar_index 9999 限制）
+var int tf1_currentStartTime = na
+var int tf1_prevStartTime = na
+if tf1_isNew
+    if not na(tf1_currentStartTime)
+        tf1_prevStartTime := tf1_currentStartTime
+    else
+        // 首次检测到新周期时，回溯估算前一周期起始时间
+        tf1_prevStartTime := time[math.min(bar_index, 50)]
+    tf1_currentStartTime := time
+
+var int tf2_currentStartTime = na
+var int tf2_prevStartTime = na
+if tf2_isNew
+    if not na(tf2_currentStartTime)
+        tf2_prevStartTime := tf2_currentStartTime
+    else
+        tf2_prevStartTime := time[math.min(bar_index, 100)]
+    tf2_currentStartTime := time
+
+var int tf3_currentStartTime = na
+var int tf3_prevStartTime = na
+if tf3_isNew
+    if not na(tf3_currentStartTime)
+        tf3_prevStartTime := tf3_currentStartTime
+    else
+        tf3_prevStartTime := time[math.min(bar_index, 200)]
+    tf3_currentStartTime := time
+
+var int tf4_currentStartTime = na
+var int tf4_prevStartTime = na
+if tf4_isNew
+    if not na(tf4_currentStartTime)
+        tf4_prevStartTime := tf4_currentStartTime
+    else
+        tf4_prevStartTime := time[math.min(bar_index, 500)]
+    tf4_currentStartTime := time
+
+// ============================================================================
+// 获取HTF数据
+// ============================================================================
+
+// Level 1
+tf1_prev_open = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, open[1], lookahead=barmerge.lookahead_on) : na
+tf1_prev_high = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, high[1], lookahead=barmerge.lookahead_on) : na
+tf1_prev_low = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, low[1], lookahead=barmerge.lookahead_on) : na
+tf1_prev_mid = (tf1_prev_high + tf1_prev_low) / 2
+tf1_curr_open = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, open, lookahead=barmerge.lookahead_on) : na
+tf1_curr_high = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, high, lookahead=barmerge.lookahead_on) : na
+tf1_curr_low = tf1_str != "" ? request.security(syminfo.tickerid, tf1_str, low, lookahead=barmerge.lookahead_on) : na
+tf1_curr_mid = (tf1_curr_high + tf1_curr_low) / 2
+
+// Level 2
+tf2_prev_open = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, open[1], lookahead=barmerge.lookahead_on) : na
+tf2_prev_high = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, high[1], lookahead=barmerge.lookahead_on) : na
+tf2_prev_low = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, low[1], lookahead=barmerge.lookahead_on) : na
+tf2_prev_mid = (tf2_prev_high + tf2_prev_low) / 2
+tf2_curr_open = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, open, lookahead=barmerge.lookahead_on) : na
+tf2_curr_high = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, high, lookahead=barmerge.lookahead_on) : na
+tf2_curr_low = tf2_str != "" ? request.security(syminfo.tickerid, tf2_str, low, lookahead=barmerge.lookahead_on) : na
+tf2_curr_mid = (tf2_curr_high + tf2_curr_low) / 2
+
+// Level 3
+tf3_prev_open = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, open[1], lookahead=barmerge.lookahead_on) : na
+tf3_prev_high = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, high[1], lookahead=barmerge.lookahead_on) : na
+tf3_prev_low = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, low[1], lookahead=barmerge.lookahead_on) : na
+tf3_prev_mid = (tf3_prev_high + tf3_prev_low) / 2
+tf3_curr_open = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, open, lookahead=barmerge.lookahead_on) : na
+tf3_curr_high = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, high, lookahead=barmerge.lookahead_on) : na
+tf3_curr_low = tf3_str != "" ? request.security(syminfo.tickerid, tf3_str, low, lookahead=barmerge.lookahead_on) : na
+tf3_curr_mid = (tf3_curr_high + tf3_curr_low) / 2
+
+// Level 4
+tf4_prev_open = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, open[1], lookahead=barmerge.lookahead_on) : na
+tf4_prev_high = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, high[1], lookahead=barmerge.lookahead_on) : na
+tf4_prev_low = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, low[1], lookahead=barmerge.lookahead_on) : na
+tf4_prev_mid = (tf4_prev_high + tf4_prev_low) / 2
+tf4_curr_open = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, open, lookahead=barmerge.lookahead_on) : na
+tf4_curr_high = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, high, lookahead=barmerge.lookahead_on) : na
+tf4_curr_low = tf4_str != "" ? request.security(syminfo.tickerid, tf4_str, low, lookahead=barmerge.lookahead_on) : na
+tf4_curr_mid = (tf4_curr_high + tf4_curr_low) / 2
+
+// ============================================================================
+// Day of Week 数据追踪
+// ============================================================================
+
+// 日线时间追踪
+daily_time = time("D")
+daily_isNew = ta.change(daily_time) != 0
+
+// 获取当前日期的星期几 (1=Sunday, 2=Monday, ..., 7=Saturday)
+// 根据品种类型选择不同的判断方式：
+// - 外汇/CFD：日线开盘在前一天晚间，需要用 time_close("D")
+// - 加密货币等：24/7 交易，日线开盘就是当天，用 time("D") 即可
+bool isForexOrCfd = syminfo.type == "forex" or syminfo.type == "cfd"
+currentDayOfWeek = isForexOrCfd ? dayofweek(time_close("D")) : dayofweek(daily_time)
+
+// DOW1 数据追踪
+dow1_dayNum = getDayOfWeekNum(dow1_day)
+var float dow1_open = na
+var float dow1_high = na
+var float dow1_low = na
+var int dow1_startTime = na
+
+// 在日线变化时检查是否是目标星期几
+if daily_isNew and dow1_dayNum != 0
+    if currentDayOfWeek == dow1_dayNum
+        dow1_open := open
+        dow1_high := high
+        dow1_low := low
+        dow1_startTime := time
+
+// 实时更新当天的高低点
+if dow1_dayNum != 0 and currentDayOfWeek == dow1_dayNum
+    if high > dow1_high or na(dow1_high)
+        dow1_high := high
+    if low < dow1_low or na(dow1_low)
+        dow1_low := low
+
+dow1_mid = (dow1_high + dow1_low) / 2
+
+// DOW2 数据追踪
+dow2_dayNum = getDayOfWeekNum(dow2_day)
+var float dow2_open = na
+var float dow2_high = na
+var float dow2_low = na
+var int dow2_startTime = na
+
+if daily_isNew and dow2_dayNum != 0
+    if currentDayOfWeek == dow2_dayNum
+        dow2_open := open
+        dow2_high := high
+        dow2_low := low
+        dow2_startTime := time
+
+if dow2_dayNum != 0 and currentDayOfWeek == dow2_dayNum
+    if high > dow2_high or na(dow2_high)
+        dow2_high := high
+    if low < dow2_low or na(dow2_low)
+        dow2_low := low
+
+dow2_mid = (dow2_high + dow2_low) / 2
+
+// DOW3 数据追踪
+dow3_dayNum = getDayOfWeekNum(dow3_day)
+var float dow3_open = na
+var float dow3_high = na
+var float dow3_low = na
+var int dow3_startTime = na
+
+if daily_isNew and dow3_dayNum != 0
+    if currentDayOfWeek == dow3_dayNum
+        dow3_open := open
+        dow3_high := high
+        dow3_low := low
+        dow3_startTime := time
+
+if dow3_dayNum != 0 and currentDayOfWeek == dow3_dayNum
+    if high > dow3_high or na(dow3_high)
+        dow3_high := high
+    if low < dow3_low or na(dow3_low)
+        dow3_low := low
+
+dow3_mid = (dow3_high + dow3_low) / 2
+
+// ============================================================================
+// 绘制线条和标签
+// ============================================================================
+
+lineStyle = getLineStyle()
+labelSize = getLabelSize()
+
+// 数据存储数组
+var array<float> priceArr = array.new_float()
+var array<string> labelArr = array.new_string()
+var array<color> colorArr = array.new_color()
+var array<int> startTimeArr = array.new_int()
+var array<line> lineArr = array.new_line()
+var array<label> labelObjArr = array.new_label()
+
+// 检查价格是否完全相同
+isPriceSame(price1, price2) =>
+    if na(price1) or na(price2)
+        false
+    else
+        price1 == price2
+
+if barstate.islast
+    // 安全删除旧的线条
+    if array.size(lineArr) > 0
+        for i = array.size(lineArr) - 1 to 0
+            line.delete(array.get(lineArr, i))
+
+    // 安全删除旧的标签
+    if array.size(labelObjArr) > 0
+        for i = array.size(labelObjArr) - 1 to 0
+            label.delete(array.get(labelObjArr, i))
+
+    array.clear(lineArr)
+    array.clear(labelObjArr)
+    array.clear(priceArr)
+    array.clear(labelArr)
+    array.clear(colorArr)
+    array.clear(startTimeArr)
+
+    // 默认起始时间（当没有检测到周期开始时使用）
+    // 使用实际存在的K线时间，避免周末休市导致时间落入无数据区域
+    int defaultCurrTime = time[math.min(bar_index, 20)]
+    int defaultPrevTime = time[math.min(bar_index, 50)]
+
+    // ========== 收集所有启用的价格线 ==========
+
+    // Level 1
+    if tf1_enabled and tf1_select != "None"
+        int currStart1 = na(tf1_currentStartTime) ? defaultCurrTime : tf1_currentStartTime
+        int prevStart1 = na(tf1_prevStartTime) ? defaultPrevTime : tf1_prevStartTime
+        midColor1 = color.new(tf1_color, 40)
+
+        if tf1_show_curr_open and not na(tf1_curr_open)
+            array.push(priceArr, tf1_curr_open)
+            array.push(labelArr, tf1_label + "O")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, currStart1)
+        if tf1_show_curr_high and not na(tf1_curr_high)
+            array.push(priceArr, tf1_curr_high)
+            array.push(labelArr, tf1_label + "H")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, currStart1)
+        if tf1_show_curr_low and not na(tf1_curr_low)
+            array.push(priceArr, tf1_curr_low)
+            array.push(labelArr, tf1_label + "L")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, currStart1)
+        if tf1_show_curr_mid and not na(tf1_curr_mid)
+            array.push(priceArr, tf1_curr_mid)
+            array.push(labelArr, tf1_label + "M")
+            array.push(colorArr, midColor1)
+            array.push(startTimeArr, currStart1)
+        if tf1_show_prev_open and not na(tf1_prev_open)
+            array.push(priceArr, tf1_prev_open)
+            array.push(labelArr, "p" + tf1_label + "O")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, prevStart1)
+        if tf1_show_prev_high and not na(tf1_prev_high)
+            array.push(priceArr, tf1_prev_high)
+            array.push(labelArr, "p" + tf1_label + "H")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, prevStart1)
+        if tf1_show_prev_low and not na(tf1_prev_low)
+            array.push(priceArr, tf1_prev_low)
+            array.push(labelArr, "p" + tf1_label + "L")
+            array.push(colorArr, tf1_color)
+            array.push(startTimeArr, prevStart1)
+        if tf1_show_prev_mid and not na(tf1_prev_mid)
+            array.push(priceArr, tf1_prev_mid)
+            array.push(labelArr, "p" + tf1_label + "M")
+            array.push(colorArr, midColor1)
+            array.push(startTimeArr, prevStart1)
+
+    // Level 2
+    if tf2_enabled and tf2_select != "None"
+        int currStart2 = na(tf2_currentStartTime) ? defaultCurrTime : tf2_currentStartTime
+        int prevStart2 = na(tf2_prevStartTime) ? defaultPrevTime : tf2_prevStartTime
+        midColor2 = color.new(tf2_color, 40)
+
+        if tf2_show_curr_open and not na(tf2_curr_open)
+            array.push(priceArr, tf2_curr_open)
+            array.push(labelArr, tf2_label + "O")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, currStart2)
+        if tf2_show_curr_high and not na(tf2_curr_high)
+            array.push(priceArr, tf2_curr_high)
+            array.push(labelArr, tf2_label + "H")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, currStart2)
+        if tf2_show_curr_low and not na(tf2_curr_low)
+            array.push(priceArr, tf2_curr_low)
+            array.push(labelArr, tf2_label + "L")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, currStart2)
+        if tf2_show_curr_mid and not na(tf2_curr_mid)
+            array.push(priceArr, tf2_curr_mid)
+            array.push(labelArr, tf2_label + "M")
+            array.push(colorArr, midColor2)
+            array.push(startTimeArr, currStart2)
+        if tf2_show_prev_open and not na(tf2_prev_open)
+            array.push(priceArr, tf2_prev_open)
+            array.push(labelArr, "p" + tf2_label + "O")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, prevStart2)
+        if tf2_show_prev_high and not na(tf2_prev_high)
+            array.push(priceArr, tf2_prev_high)
+            array.push(labelArr, "p" + tf2_label + "H")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, prevStart2)
+        if tf2_show_prev_low and not na(tf2_prev_low)
+            array.push(priceArr, tf2_prev_low)
+            array.push(labelArr, "p" + tf2_label + "L")
+            array.push(colorArr, tf2_color)
+            array.push(startTimeArr, prevStart2)
+        if tf2_show_prev_mid and not na(tf2_prev_mid)
+            array.push(priceArr, tf2_prev_mid)
+            array.push(labelArr, "p" + tf2_label + "M")
+            array.push(colorArr, midColor2)
+            array.push(startTimeArr, prevStart2)
+
+    // Level 3
+    if tf3_enabled and tf3_select != "None"
+        int currStart3 = na(tf3_currentStartTime) ? defaultCurrTime : tf3_currentStartTime
+        int prevStart3 = na(tf3_prevStartTime) ? defaultPrevTime : tf3_prevStartTime
+        midColor3 = color.new(tf3_color, 40)
+
+        if tf3_show_curr_open and not na(tf3_curr_open)
+            array.push(priceArr, tf3_curr_open)
+            array.push(labelArr, tf3_label + "O")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, currStart3)
+        if tf3_show_curr_high and not na(tf3_curr_high)
+            array.push(priceArr, tf3_curr_high)
+            array.push(labelArr, tf3_label + "H")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, currStart3)
+        if tf3_show_curr_low and not na(tf3_curr_low)
+            array.push(priceArr, tf3_curr_low)
+            array.push(labelArr, tf3_label + "L")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, currStart3)
+        if tf3_show_curr_mid and not na(tf3_curr_mid)
+            array.push(priceArr, tf3_curr_mid)
+            array.push(labelArr, tf3_label + "M")
+            array.push(colorArr, midColor3)
+            array.push(startTimeArr, currStart3)
+        if tf3_show_prev_open and not na(tf3_prev_open)
+            array.push(priceArr, tf3_prev_open)
+            array.push(labelArr, "p" + tf3_label + "O")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, prevStart3)
+        if tf3_show_prev_high and not na(tf3_prev_high)
+            array.push(priceArr, tf3_prev_high)
+            array.push(labelArr, "p" + tf3_label + "H")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, prevStart3)
+        if tf3_show_prev_low and not na(tf3_prev_low)
+            array.push(priceArr, tf3_prev_low)
+            array.push(labelArr, "p" + tf3_label + "L")
+            array.push(colorArr, tf3_color)
+            array.push(startTimeArr, prevStart3)
+        if tf3_show_prev_mid and not na(tf3_prev_mid)
+            array.push(priceArr, tf3_prev_mid)
+            array.push(labelArr, "p" + tf3_label + "M")
+            array.push(colorArr, midColor3)
+            array.push(startTimeArr, prevStart3)
+
+    // Level 4
+    if tf4_enabled and tf4_select != "None"
+        int currStart4 = na(tf4_currentStartTime) ? defaultCurrTime : tf4_currentStartTime
+        int prevStart4 = na(tf4_prevStartTime) ? defaultPrevTime : tf4_prevStartTime
+        midColor4 = color.new(tf4_color, 40)
+
+        if tf4_show_curr_open and not na(tf4_curr_open)
+            array.push(priceArr, tf4_curr_open)
+            array.push(labelArr, tf4_label + "O")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, currStart4)
+        if tf4_show_curr_high and not na(tf4_curr_high)
+            array.push(priceArr, tf4_curr_high)
+            array.push(labelArr, tf4_label + "H")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, currStart4)
+        if tf4_show_curr_low and not na(tf4_curr_low)
+            array.push(priceArr, tf4_curr_low)
+            array.push(labelArr, tf4_label + "L")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, currStart4)
+        if tf4_show_curr_mid and not na(tf4_curr_mid)
+            array.push(priceArr, tf4_curr_mid)
+            array.push(labelArr, tf4_label + "M")
+            array.push(colorArr, midColor4)
+            array.push(startTimeArr, currStart4)
+        if tf4_show_prev_open and not na(tf4_prev_open)
+            array.push(priceArr, tf4_prev_open)
+            array.push(labelArr, "p" + tf4_label + "O")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, prevStart4)
+        if tf4_show_prev_high and not na(tf4_prev_high)
+            array.push(priceArr, tf4_prev_high)
+            array.push(labelArr, "p" + tf4_label + "H")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, prevStart4)
+        if tf4_show_prev_low and not na(tf4_prev_low)
+            array.push(priceArr, tf4_prev_low)
+            array.push(labelArr, "p" + tf4_label + "L")
+            array.push(colorArr, tf4_color)
+            array.push(startTimeArr, prevStart4)
+        if tf4_show_prev_mid and not na(tf4_prev_mid)
+            array.push(priceArr, tf4_prev_mid)
+            array.push(labelArr, "p" + tf4_label + "M")
+            array.push(colorArr, midColor4)
+            array.push(startTimeArr, prevStart4)
+
+    // ========== Day of Week Levels ==========
+
+    // DOW1
+    if dow1_day != "None" and not na(dow1_startTime)
+        string dow1Label = getDayLabel(dow1_day)
+        midColor_dow1 = color.new(dow1_color, 40)
+
+        if dow1_show_open and not na(dow1_open)
+            array.push(priceArr, dow1_open)
+            array.push(labelArr, dow1Label + "O")
+            array.push(colorArr, dow1_color)
+            array.push(startTimeArr, dow1_startTime)
+        if dow1_show_high and not na(dow1_high)
+            array.push(priceArr, dow1_high)
+            array.push(labelArr, dow1Label + "H")
+            array.push(colorArr, dow1_color)
+            array.push(startTimeArr, dow1_startTime)
+        if dow1_show_low and not na(dow1_low)
+            array.push(priceArr, dow1_low)
+            array.push(labelArr, dow1Label + "L")
+            array.push(colorArr, dow1_color)
+            array.push(startTimeArr, dow1_startTime)
+        if dow1_show_mid and not na(dow1_mid)
+            array.push(priceArr, dow1_mid)
+            array.push(labelArr, dow1Label + "½")
+            array.push(colorArr, midColor_dow1)
+            array.push(startTimeArr, dow1_startTime)
+
+    // DOW2
+    if dow2_day != "None" and not na(dow2_startTime)
+        string dow2Label = getDayLabel(dow2_day)
+        midColor_dow2 = color.new(dow2_color, 40)
+
+        if dow2_show_open and not na(dow2_open)
+            array.push(priceArr, dow2_open)
+            array.push(labelArr, dow2Label + "O")
+            array.push(colorArr, dow2_color)
+            array.push(startTimeArr, dow2_startTime)
+        if dow2_show_high and not na(dow2_high)
+            array.push(priceArr, dow2_high)
+            array.push(labelArr, dow2Label + "H")
+            array.push(colorArr, dow2_color)
+            array.push(startTimeArr, dow2_startTime)
+        if dow2_show_low and not na(dow2_low)
+            array.push(priceArr, dow2_low)
+            array.push(labelArr, dow2Label + "L")
+            array.push(colorArr, dow2_color)
+            array.push(startTimeArr, dow2_startTime)
+        if dow2_show_mid and not na(dow2_mid)
+            array.push(priceArr, dow2_mid)
+            array.push(labelArr, dow2Label + "½")
+            array.push(colorArr, midColor_dow2)
+            array.push(startTimeArr, dow2_startTime)
+
+    // DOW3
+    if dow3_day != "None" and not na(dow3_startTime)
+        string dow3Label = getDayLabel(dow3_day)
+        midColor_dow3 = color.new(dow3_color, 40)
+
+        if dow3_show_open and not na(dow3_open)
+            array.push(priceArr, dow3_open)
+            array.push(labelArr, dow3Label + "O")
+            array.push(colorArr, dow3_color)
+            array.push(startTimeArr, dow3_startTime)
+        if dow3_show_high and not na(dow3_high)
+            array.push(priceArr, dow3_high)
+            array.push(labelArr, dow3Label + "H")
+            array.push(colorArr, dow3_color)
+            array.push(startTimeArr, dow3_startTime)
+        if dow3_show_low and not na(dow3_low)
+            array.push(priceArr, dow3_low)
+            array.push(labelArr, dow3Label + "L")
+            array.push(colorArr, dow3_color)
+            array.push(startTimeArr, dow3_startTime)
+        if dow3_show_mid and not na(dow3_mid)
+            array.push(priceArr, dow3_mid)
+            array.push(labelArr, dow3Label + "½")
+            array.push(colorArr, midColor_dow3)
+            array.push(startTimeArr, dow3_startTime)
+
+    // ========== 合并重叠的价格并绘制 ==========
+    int arrSize = array.size(priceArr)
+    // 计算线条右端偏移时间
+    int barDuration = time - time[1]
+    int lineEndTime = chart.right_visible_bar_time + barDuration * line_right_offset
+
+    if arrSize > 0
+        var array<bool> processed = array.new_bool()
+        array.clear(processed)
+        for i = 0 to arrSize - 1
+            array.push(processed, false)
+
+        for i = 0 to arrSize - 1
+            if not array.get(processed, i)
+                float currentPrice = array.get(priceArr, i)
+                string mergedLabel = array.get(labelArr, i)
+                color currentColor = array.get(colorArr, i)
+                int minStartTime = array.get(startTimeArr, i)
+
+                // 查找所有接近此价格的其他线
+                if i < arrSize - 1
+                    for j = i + 1 to arrSize - 1
+                        if not array.get(processed, j)
+                            float otherPrice = array.get(priceArr, j)
+                            if isPriceSame(currentPrice, otherPrice)
+                                mergedLabel := mergedLabel + "/" + array.get(labelArr, j)
+                                if array.get(startTimeArr, j) < minStartTime
+                                    minStartTime := array.get(startTimeArr, j)
+                                array.set(processed, j, true)
+
+                array.set(processed, i, true)
+
+                // 绘制线条（从起始时间到偏移位置）
+                newLine = line.new(minStartTime, currentPrice, lineEndTime, currentPrice, xloc.bar_time, extend.none, currentColor, lineStyle, line_width)
+                array.push(lineArr, newLine)
+
+                // 绘制标签（在线条右端，使用 style_label_left 实现垂直居中）
+                if show_labels
+                    newLabel = label.new(lineEndTime, currentPrice, mergedLabel, xloc.bar_time, yloc.price, color.new(currentColor, 100), label.style_label_left, currentColor, labelSize)
+                    array.push(labelObjArr, newLabel)
