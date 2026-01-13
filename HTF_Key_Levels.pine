@@ -274,9 +274,9 @@ daily_isNew = ta.change(daily_time) != 0
 
 // 获取当前日期的星期几 (1=Sunday, 2=Monday, ..., 7=Saturday)
 // 根据品种类型选择不同的判断方式：
-// - 外汇/CFD：日线开盘在前一天晚间，需要用 time_close("D")
+// - 外汇/CFD/指数/期货：日线开盘在前一天晚间，需要用 time_close("D")
 // - 加密货币等：24/7 交易，日线开盘就是当天，用 time("D") 即可
-bool isForexOrCfd = syminfo.type == "forex" or syminfo.type == "cfd"
+bool isForexOrCfd = syminfo.type == "forex" or syminfo.type == "cfd" or syminfo.type == "index" or syminfo.type == "futures"
 currentDayOfWeek = isForexOrCfd ? dayofweek(time_close("D")) : dayofweek(daily_time)
 
 // DOW1 数据追踪
